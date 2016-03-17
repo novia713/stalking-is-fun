@@ -1,0 +1,10 @@
+{
+    "require": {
+        "fabpot/goutte": "^3.1",
+        "raveren/kint": "^1.0",
+        "guzzlehttp/guzzle": "^6.1",
+        "league/climate": "^3.2",
+        "league/route": "^2.0",
+        "zendframework/zend-diactoros": "^1.3"
+    }
+}
