@@ -10,7 +10,6 @@ ini_set('display_errors', 'On');
  */
  $secret = "4f3c2c4368c3e7dc7588d93efd5d66ea2ad90585";
  $id ="a182edbb05e1757dadd9";
-# f59c4dab94afd1fe0bd899e84cbd0e8087ba9543
 
 require "vendor/autoload.php";
 $climate = new League\CLImate\CLImate;
@@ -52,7 +51,6 @@ switch ($verb) {
   */
  case "followers_gh":
   $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$id.'&client_secret='.$secret;
-  $do_req($url);
   break;
  /**
   * http://mysite.com/search_gh/trufae
@@ -62,7 +60,8 @@ switch ($verb) {
   */
  case "search_gh":
   $url = 'https://api.github.com/search/users?client_id='.$id.'&client_secret='.$secret.'&q='  . $noun;
-  $do_req($url);
   break;
 
 }
+
+$do_req($url);
