@@ -1,11 +1,17 @@
 <?php
 
+// only for developing, disable when prod
 error_reporting(-1);
 ini_set('display_errors', 'On');
+
 /**
  *
- * (c) 20160317 leandro713 <leandro@leandro.org>
- * these are my personal keys, please use your own keys
+ *  (c) 20160317 leandro713 <leandro@leandro.org>
+ *  these are my personal keys, please use your own keys
+ *
+ *  ===================================================
+ *  ========= PUT YOUR OWN GITHUB KEYS HERE ===========
+ *  ===================================================
  *
  */
  $secret = "4f3c2c4368c3e7dc7588d93efd5d66ea2ad90585";
@@ -28,7 +34,7 @@ $do_req = function ($url) use ($client){
   $req = $client->request( 'GET', $url );
 
   if ($req->getBody()) {
-    //header("Access-Control-Allow-Origin: *"); //CORS
+    header("Access-Control-Allow-Origin: *"); //CORS
     echo $req->getBody();
   }
 

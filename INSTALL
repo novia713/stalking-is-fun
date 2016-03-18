@@ -1,1 +1,11 @@
-composer install
+(c) leandro713 2016
+===================
+
+1. composer install
+
+2. please, use your own app keys of Github API. Get one in https://github.com/settings/applications/new and configure it in /index.php
+
+3. the swagger documentation should work out of the box, in any case, the critical file is doc/swagger.json. Ensure swagger can access to it.
+To visualize the documentation point to http://mysite.com/doc/dist/
+
+[if you are having this project in internet, perhaps you don't want swagger were public accesible]
