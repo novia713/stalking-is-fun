@@ -1,0 +1,219 @@
+{
+   "swagger":"2.0",
+   "info":{
+      "description":"Stalkin is fun Proyect",
+      "version":"1.0.0",
+      "title":"Stalker Project",
+      "termsOfService":"http://kaka.pink",
+      "contact":{
+         "email":"leandro@leandro.org"
+      },
+      "license":{
+         "name":"Apache 2.0",
+         "url":"http://www.apache.org/licenses/LICENSE-2.0.html"
+      }
+   },
+   "host":"lab.dev/stalking",
+   "basePath":"/",
+   "tags":[
+      {
+         "name":"user",
+         "description":"Everything about people",
+         "externalDocs":{
+            "description":"Find out more",
+            "url":"http://lab.dev/stalking"
+         }
+      }
+   ],
+   "schemes":[
+      "http"
+   ],
+   "paths":{
+      "/followers_gh/{username}":{
+         "get":{
+            "tags":[
+               "followers"
+            ],
+            "summary":"Get info about the followers of a given user in Github",
+            "description":"Followers of the user in Github",
+            "operationId":"followers_gh",
+            "consumes":[
+               "application/json"
+            ],
+            "produces":[
+               "application/json"
+            ],
+            "parameters":[
+               {
+                  "in":"path",
+                  "name":"username",
+                  "description":"The user name to stalk",
+                  "required":"true",
+                  "type": "string"
+               }
+            ],
+            "responses":{
+               "405":{
+                  "description":"Invalid input"
+               }
+            }
+         }
+      },
+      "/search_gh/{username}":{
+         "get":{
+            "tags":[
+               "search"
+            ],
+            "summary":"Finds usernames in Github",
+            "description":"Provide only one username for searching it in Github",
+            "operationId":"search_gh",
+            "produces":[
+               "application/json"
+            ],
+            "parameters":[
+               {
+                  "in":"path",
+                  "name":"username",
+                  "description":"The user name to stalk",
+                  "required":"true",
+                  "type": "string"
+               }
+            ],
+            "responses":{
+               "200":{
+                  "description":"successful operation",
+                  "schema":{
+                     "type":"array",
+                     "items":{
+                        "$ref":"#/definitions/User"
+                     }
+                  }
+               },
+               "400":{
+                  "description":"Invalid status value"
+               }
+            }
+         }
+      }
+   },
+   "definitions":{
+      "Order":{
+         "type":"object",
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "petId":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "quantity":{
+               "type":"integer",
+               "format":"int32"
+            },
+            "shipDate":{
+               "type":"string",
+               "format":"date-time"
+            },
+            "status":{
+               "type":"string",
+               "description":"Order Status",
+               "enum":[
+                  "placed",
+                  "approved",
+                  "delivered"
+               ]
+            },
+            "complete":{
+               "type":"boolean",
+               "default":false
+            }
+         },
+         "xml":{
+            "name":"Order"
+         }
+      },
+      "User":{
+         "type":"object",
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "username":{
+               "type":"string"
+            },
+            "firstName":{
+               "type":"string"
+            },
+            "lastName":{
+               "type":"string"
+            },
+            "email":{
+               "type":"string"
+            },
+            "password":{
+               "type":"string"
+            },
+            "phone":{
+               "type":"string"
+            },
+            "userStatus":{
+               "type":"integer",
+               "format":"int32",
+               "description":"User Status"
+            }
+         }
+      },
+      "Category":{
+         "type":"object",
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "name":{
+               "type":"string"
+            }
+         },
+         "xml":{
+            "name":"Category"
+         }
+      },
+      "Tag":{
+         "type":"object",
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "name":{
+               "type":"string"
+            }
+         },
+         "xml":{
+            "name":"Tag"
+         }
+      },
+      "ApiResponse":{
+         "type":"object",
+         "properties":{
+            "code":{
+               "type":"integer",
+               "format":"int32"
+            },
+            "type":{
+               "type":"string"
+            },
+            "message":{
+               "type":"string"
+            }
+         }
+      }
+   },
+   "externalDocs":{
+      "description":"Find out more about Swagger",
+      "url":"http://swagger.io"
+   }
+}

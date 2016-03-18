@@ -28,6 +28,7 @@ $do_req = function ($url) use ($client){
   $req = $client->request( 'GET', $url );
 
   if ($req->getBody()) {
+    //header("Access-Control-Allow-Origin: *"); //CORS
     echo $req->getBody();
   }
 
