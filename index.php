@@ -10,13 +10,13 @@
    *  ===================================================
    *
    */
+
   $GH_SECRET_KEY = "4f3c2c4368c3e7dc7588d93efd5d66ea2ad90585";
   $GH_ID_KEY     = "a182edbb05e1757dadd9";
 
 
-  use Goutte\Client;
   $guzzle  = new GuzzleHttp\Client();
-  $goutte  = new Client();
+  $goutte  = new Goutte\Client();
   $whoops  = new \Whoops\Run;
 
   // for routing
@@ -36,6 +36,7 @@
    */
 
   $routing_management = function () use( &$query_string, &$verb, &$noun ) {
+
     $query_string = explode("/", $_SERVER['QUERY_STRING']);
     $verb = @$query_string[1];
     $noun = @$query_string[2];
@@ -45,6 +46,12 @@
         echo json_encode([ "status-code" => "400", "response" => "No username found"]);
         die();
     }
+  };
+
+  $spit = function($value) {
+    header('Content-Type', 'application/json');
+    header("Access-Control-Allow-Origin: *"); //CORS
+    echo $value;
   };
 
 
@@ -69,10 +76,11 @@
    *
    *
    */
-  $do_req = function ($url, $mode=0) use ($guzzle, $req_with_goutte) {
+  $do_req = function ($url, $mode=0) use ($spit, $guzzle, $req_with_goutte) {
 
-    if ($mode == 1) { //@TODO: refactor this in lambda
+    if ($mode == 1) {
 
+        //@TODO: $spit
         echo json_encode( $req_with_goutte($url) );
 
     } else {
@@ -80,20 +88,17 @@
         try {
             $req = @$guzzle->request('GET', $url);
             if ($req->getBody()) {
-                header("Access-Control-Allow-Origin: *"); //CORS //@TODO: decorator for enveloping headers & echo
-                echo $req->getBody();
+                $spit( $req->getBody() );
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             echo json_encode(["status-code" => $e->getResponse()->getStatusCode(), "response" => "No user found"]);
         }
     }
 
-
-
   };
 
 
-  $set_mode_req = function() use (&$verb) {
+  $set_mode_req = function() use ( &$verb ) {
     return ($verb != "android-market")? 0: 1;
   };
 
@@ -112,7 +117,7 @@
       $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
       break;
      /**
-      * http://mysite.com/search_gh/trufae
+      * http://mysite.com/search_gh/rickycode
       *
       * searchs users in Github
       *
@@ -122,7 +127,7 @@
       break;
 
      /**
-      * http://mysite.com/user/trufae
+      * http://mysite.com/user/fabpot
       *
       * basic info about a user in Github
       *
@@ -171,6 +176,7 @@
    *
    *
    */
+
   $handle_errors_with_whoops();
   $routing_management();
-  $do_req($get_url(), $set_mode_req());
+  $do_req( $get_url(), $set_mode_req() );
