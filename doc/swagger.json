@@ -32,7 +32,7 @@
       "/followers_gh/{username}":{
          "get":{
             "tags":[
-               "followers"
+               "followers-gh"
             ],
             "summary":"Get info about the followers of a given user in Github",
             "description":"Followers of the user in Github",
@@ -62,7 +62,7 @@
       "/search_gh/{username}":{
          "get":{
             "tags":[
-               "search"
+               "search-gh"
             ],
             "summary":"Finds usernames in Github",
             "description":"Provide only one username for searching it in Github",
@@ -85,6 +85,66 @@
                },
                "400":{
                   "description":"Invalid status value"
+               }
+            }
+         }
+      },
+      "/user/{username}":{
+         "get":{
+            "tags":[
+               "user-gh"
+            ],
+            "summary":"Get info about a user in Github",
+            "description":"The profile user in Github",
+            "operationId":"user",
+            "consumes":[
+               "application/json"
+            ],
+            "produces":[
+               "application/json"
+            ],
+            "parameters":[
+               {
+                  "in":"path",
+                  "name":"username",
+                  "description":"The user name to stalk",
+                  "required":"true",
+                  "type": "string"
+               }
+            ],
+            "responses":{
+               "405":{
+                  "description":"Invalid input"
+               }
+            }
+         }
+      },
+      "/android-market/{username}":{
+         "get":{
+            "tags":[
+               "user-apks"
+            ],
+            "summary":"Get info user apps in Android Market",
+            "description":"Apps of the user in the Android Market",
+            "operationId":"android-market",
+            "consumes":[
+               "application/json"
+            ],
+            "produces":[
+               "application/json"
+            ],
+            "parameters":[
+               {
+                  "in":"path",
+                  "name":"username",
+                  "description":"The user name to stalk",
+                  "required":"true",
+                  "type": "string"
+               }
+            ],
+            "responses":{
+               "405":{
+                  "description":"Invalid input"
                }
             }
          }

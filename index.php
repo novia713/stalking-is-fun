@@ -1,9 +1,5 @@
 <?php
 
-// only for developing, disable when prod
-error_reporting(-1);
-ini_set('display_errors', 'On');
-
 /**
  *
  *  (c) 20160317 leandro713 <leandro@leandro.org>
@@ -18,27 +14,62 @@ ini_set('display_errors', 'On');
  $id ="a182edbb05e1757dadd9";
 
 require "vendor/autoload.php";
-$climate = new League\CLImate\CLImate;
-$client = new GuzzleHttp\Client();
+use Goutte\Client;
 
+$climate = new League\CLImate\CLImate;
+$guzzle  = new GuzzleHttp\Client();
+
+$whoops = new \Whoops\Run;
+$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+$whoops->register();
 
 // for console only ==
-$out = function ($type, $txt) use ($climate){
-  if ("info" == $type )
-    $climate->backgroundBlue()->out('Usage: php folowers_gh.php username');
+$out = function ($type, $txt) use ($climate) {
+  if ("info" == $type) {
+      $climate->backgroundBlue()->out('Usage: php folowers_gh.php username');
+  }
 
 };
 
 // aux lambda for doing the url call with Guzzle ==
-$do_req = function ($url) use ($client){
-  $req = $client->request( 'GET', $url );
+/**
+ * mode: 0 gh, 1 android-market
+ *
+ *
+ */
+$do_req = function ($url, $mode=0) use ($guzzle) {
 
-  if ($req->getBody()) {
-    header("Access-Control-Allow-Origin: *"); //CORS
-    echo $req->getBody();
+  if ($mode == 1) { //@TODO: refactor this in lambda
+
+    $goutte = new Client();
+      $crawler = $goutte->request('GET', $url);
+
+      $status_code = $goutte->getResponse()->getStatus();
+      $res = [];
+      if ($status_code==200) {
+          foreach ($crawler->filter('a[class="title"]')->extract(array('_text', 'href')) as $elem) {
+              $res[]= [ trim($elem[0]) => trim($elem[1]) ];
+          }
+      }
+
+      echo json_encode($res);
+  } else {
+      try {
+          $req = @$guzzle->request('GET', $url);
+          if ($req->getBody()) {
+              header("Access-Control-Allow-Origin: *"); //CORS //@TODO: decorator for enveloping headers & echo
+        echo $req->getBody();
+          }
+      } catch (\GuzzleHttp\Exception\ClientException $e) {
+          echo json_encode(["status-code" => $e->getResponse()->getStatusCode()]);
+      }
   }
 
+
+
 };
+
+
 //==
 #
 
@@ -47,9 +78,9 @@ $verb = @$query_string[1];
 $noun = @$query_string[2];
 
 if (!$noun) {
-  http_response_code(400);
-  echo json_encode( [ "error" => "400", "response" => "No username found"]);
-  die();
+    http_response_code(400);
+    echo json_encode([ "error" => "400", "response" => "No username found"]);
+    die();
 }
 
 $get_url = function () use ($verb, $noun, $secret, $id) {
@@ -75,6 +106,26 @@ $get_url = function () use ($verb, $noun, $secret, $id) {
     $url = 'https://api.github.com/search/users?client_id='.$id.'&client_secret='.$secret.'&q='  . $noun;
     break;
 
+   /**
+    * http://mysite.com/user/trufae
+    *
+    * basic info about a user in Github
+    *
+    */
+  case "user":
+    $url = 'https://api.github.com/users/'.$noun.'?client_id='.$id.'&client_secret='.$secret;
+    break;
+
+   /**
+    * http://mysite.com/android-market/Nordcurrent
+    *
+    * apps of the user in Android Market
+    *
+    */
+  case "android-market":
+    $url = "https://play.google.com/store/search?q=pub:".$noun;
+    break;
+
   }
 
   return $url;
@@ -82,4 +133,8 @@ $get_url = function () use ($verb, $noun, $secret, $id) {
 
 
 // 3, 2, 1 ...
-$do_req($get_url());
+if ($verb != "android-market") { //@TODO: refactor this in decorator pattern!
+  $do_req($get_url(), 0);
+} else {
+    $do_req($get_url(), 1);
+}
