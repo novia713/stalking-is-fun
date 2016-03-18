@@ -1,40 +1,30 @@
 <?php
-
-/**
- *
- *  (c) 20160317 leandro713 <leandro@leandro.org>
- *  these are my personal keys, please use your own keys
- *
- *  ===================================================
- *  ========= PUT YOUR OWN GITHUB KEYS HERE ===========
- *  ===================================================
- *
- */
-  $secret = "4f3c2c4368c3e7dc7588d93efd5d66ea2ad90585";
-  $id ="a182edbb05e1757dadd9";
-
   require "vendor/autoload.php";
-  use Goutte\Client;
+  /**
+   *
+   *  (c) 20160317 leandro713 <leandro@leandro.org>
+   *  these are my personal keys, please use your own keys
+   *
+   *  ===================================================
+   *  ========= PUT YOUR OWN GITHUB KEYS HERE ===========
+   *  ===================================================
+   *
+   */
+  $GH_SECRET_KEY = "4f3c2c4368c3e7dc7588d93efd5d66ea2ad90585";
+  $GH_ID_KEY     = "a182edbb05e1757dadd9";
 
+
+  use Goutte\Client;
   $guzzle  = new GuzzleHttp\Client();
   $goutte  = new Client();
-
   $whoops  = new \Whoops\Run;
-  $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-  $whoops->register();
 
+  // for routing
+  $query_string = null;
+  $verb = null;
+  $noun = null;
+  $url  = null;
 
-  /**  ROUNTING MANAGEMENT **/
-  $query_string = explode("/", $_SERVER['QUERY_STRING']);
-  $verb = @$query_string[1];
-  $noun = @$query_string[2];
-
-  if (!$noun) {
-      http_response_code(400);
-      echo json_encode([ "status-code" => "400", "response" => "No username found"]);
-      die();
-  }
-  /**  END ROUNTING MANAGEMENT **/
 
   /**
    *
@@ -45,7 +35,17 @@
    *
    */
 
+  $routing_management = function () use( &$query_string, &$verb, &$noun ) {
+    $query_string = explode("/", $_SERVER['QUERY_STRING']);
+    $verb = @$query_string[1];
+    $noun = @$query_string[2];
 
+    if (!$noun) {
+        http_response_code(400);
+        echo json_encode([ "status-code" => "400", "response" => "No username found"]);
+        die();
+    }
+  };
 
 
   $req_with_goutte = function($url) use ($goutte){
@@ -76,6 +76,7 @@
         echo json_encode( $req_with_goutte($url) );
 
     } else {
+
         try {
             $req = @$guzzle->request('GET', $url);
             if ($req->getBody()) {
@@ -92,12 +93,12 @@
   };
 
 
-  $set_mode_req = function() use ($verb) {
+  $set_mode_req = function() use (&$verb) {
     return ($verb != "android-market")? 0: 1;
   };
 
 
-  $get_url = function () use ($verb, $noun, $secret, $id) {
+  $get_url = function () use (&$verb, &$noun, &$url, $GH_SECRET_KEY, $GH_ID_KEY ) {
 
     switch ($verb) {
 
@@ -108,7 +109,7 @@
       *
       */
      case "followers_gh":
-      $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$id.'&client_secret='.$secret;
+      $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
       break;
      /**
       * http://mysite.com/search_gh/trufae
@@ -117,7 +118,7 @@
       *
       */
      case "search_gh":
-      $url = 'https://api.github.com/search/users?client_id='.$id.'&client_secret='.$secret.'&q='  . $noun;
+      $url = 'https://api.github.com/search/users?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY.'&q='  . $noun;
       break;
 
      /**
@@ -127,7 +128,7 @@
       *
       */
     case "user":
-      $url = 'https://api.github.com/users/'.$noun.'?client_id='.$id.'&client_secret='.$secret;
+      $url = 'https://api.github.com/users/'.$noun.'?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
       break;
 
      /**
@@ -137,7 +138,7 @@
       *
       */
     case "android-market":
-      $url = "https://play.google.com/store/search?q=pub:".$noun;
+      $url = "https://play.google.com/store/search?q=pub:". $noun;
       break;
 
     }
@@ -145,6 +146,11 @@
     return $url;
   };
 
+  $handle_errors_with_whoops = function() use ($whoops){
+
+    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+    $whoops->register();
+  };
 
   /**
    *
@@ -165,5 +171,6 @@
    *
    *
    */
-
+  $handle_errors_with_whoops();
+  $routing_management();
   $do_req($get_url(), $set_mode_req());
