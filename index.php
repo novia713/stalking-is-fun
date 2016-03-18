@@ -46,7 +46,11 @@ $query_string = explode("/", $_SERVER['QUERY_STRING']);
 $verb = @$query_string[1];
 $noun = @$query_string[2];
 
-if (!$noun) die("No username found");
+if (!$noun) {
+  http_response_code(400);
+  echo json_encode( [ "error" => "400", "response" => "No username found"]);
+  die();
+}
 
 switch ($verb) {
 
