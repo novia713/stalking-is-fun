@@ -16,19 +16,28 @@
 require "vendor/autoload.php";
 use Goutte\Client;
 
-$climate = new League\CLImate\CLImate;
 $guzzle  = new GuzzleHttp\Client();
+$goutte  = new Client();
 
-$whoops = new \Whoops\Run;
+$whoops  = new \Whoops\Run;
 $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
 $whoops->register();
 
-// for console only ==
-$out = function ($type, $txt) use ($climate) {
-  if ("info" == $type) {
-      $climate->backgroundBlue()->out('Usage: php folowers_gh.php username');
-  }
 
+
+$req_with_goutte = function($url) use ($goutte){
+
+  $crawler = $goutte->request('GET', $url);
+  $status_code = $goutte->getResponse()->getStatus();
+
+  if ($status_code==200) {
+    $res = [];
+    foreach ($crawler->filter('a[class="title"]')->extract(array('_text', 'href')) as $elem) {
+      $res[]= [ trim($elem[0]) => trim($elem[1]) ];
+    }
+  }
+  if (empty($res)) $res = json_encode( ['status-code' => 404] );
+  return $res;
 };
 
 // aux lambda for doing the url call with Guzzle ==
@@ -37,28 +46,18 @@ $out = function ($type, $txt) use ($climate) {
  *
  *
  */
-$do_req = function ($url, $mode=0) use ($guzzle) {
+$do_req = function ($url, $mode=0) use ($guzzle, $req_with_goutte) {
 
   if ($mode == 1) { //@TODO: refactor this in lambda
 
-    $goutte = new Client();
-      $crawler = $goutte->request('GET', $url);
+      echo json_encode( $req_with_goutte($url) );
 
-      $status_code = $goutte->getResponse()->getStatus();
-      $res = [];
-      if ($status_code==200) {
-          foreach ($crawler->filter('a[class="title"]')->extract(array('_text', 'href')) as $elem) {
-              $res[]= [ trim($elem[0]) => trim($elem[1]) ];
-          }
-      }
-
-      echo json_encode($res);
   } else {
       try {
           $req = @$guzzle->request('GET', $url);
           if ($req->getBody()) {
               header("Access-Control-Allow-Origin: *"); //CORS //@TODO: decorator for enveloping headers & echo
-        echo $req->getBody();
+              echo $req->getBody();
           }
       } catch (\GuzzleHttp\Exception\ClientException $e) {
           echo json_encode(["status-code" => $e->getResponse()->getStatusCode()]);
