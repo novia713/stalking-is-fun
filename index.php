@@ -52,27 +52,34 @@ if (!$noun) {
   die();
 }
 
-switch ($verb) {
+$get_url = function () use ($verb, $noun, $secret, $id) {
 
- /**
-  * http://mysite.com/followers_gh/trufae
-  *
-  * gets followers in Github
-  *
-  */
- case "followers_gh":
-  $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$id.'&client_secret='.$secret;
-  break;
- /**
-  * http://mysite.com/search_gh/trufae
-  *
-  * searchs users in Github
-  *
-  */
- case "search_gh":
-  $url = 'https://api.github.com/search/users?client_id='.$id.'&client_secret='.$secret.'&q='  . $noun;
-  break;
+  switch ($verb) {
 
-}
+   /**
+    * http://mysite.com/followers_gh/trufae
+    *
+    * gets followers in Github
+    *
+    */
+   case "followers_gh":
+    $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$id.'&client_secret='.$secret;
+    break;
+   /**
+    * http://mysite.com/search_gh/trufae
+    *
+    * searchs users in Github
+    *
+    */
+   case "search_gh":
+    $url = 'https://api.github.com/search/users?client_id='.$id.'&client_secret='.$secret.'&q='  . $noun;
+    break;
 
-$do_req($url);
+  }
+
+  return $url;
+};
+
+
+// 3, 2, 1 ...
+$do_req($get_url());
