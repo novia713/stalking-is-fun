@@ -131,9 +131,10 @@ $get_url = function () use ($verb, $noun, $secret, $id) {
 };
 
 
+$set_mode_req = function() use ($verb) {
+  return ($verb != "android-market")? 0: 1;
+};
+
+
 // 3, 2, 1 ...
-if ($verb != "android-market") { //@TODO: refactor this in decorator pattern!
-  $do_req($get_url(), 0);
-} else {
-    $do_req($get_url(), 1);
-}
+$do_req($get_url(), $set_mode_req());
