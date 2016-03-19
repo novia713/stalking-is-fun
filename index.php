@@ -25,11 +25,41 @@
   $goutte  = new Goutte\Client();
   $whoops  = new \Whoops\Run;
 
+  /*
+   * @TODO: sustituir $handle_routing con functor;
+   *
+    class RouteContext {
+      public $context = [];
+    }
+    $routing_management = function($vars) use ($_SERVER){
+        function() {
+          $query_string = explode("/", $_SERVER['QUERY_STRING']);
+          $_['verb'] = @$query_string[1];
+          $_['noun'] = @$query_string[2];
+
+          if (!$_['noun']) {
+              http_response_code(400);
+              echo json_encode([ "status-code" => "400", "response" => "No username found"]);
+              die();
+          }
+          return $_;
+        }
+    }
+    $RC = new RouteContext;
+    $routing_management->bindTo($RC);
+
+    $routing_management();
+    d($RC);
+   *
+   *
+   *
+   */
+
+
   // for routing
   $query_string = null;
   $verb = null;
   $noun = null;
-
 
 
   /**
