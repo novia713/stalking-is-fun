@@ -23,7 +23,7 @@
   $query_string = null;
   $verb = null;
   $noun = null;
-  $url  = null;
+
 
 
   /**
@@ -103,7 +103,7 @@
   };
 
 
-  $get_url = function () use (&$verb, &$noun, &$url, $GH_SECRET_KEY, $GH_ID_KEY ) {
+  $get_url = function () use (&$verb, &$noun, $GH_SECRET_KEY, $GH_ID_KEY ) {
 
     switch ($verb) {
 
