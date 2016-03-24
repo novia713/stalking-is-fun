@@ -47,18 +47,22 @@
    *
    */
 
+  $guard_params = function ($params) {
+    if (array_filter($params, function( $p ) { return empty($p); }) ){
+      http_response_code(400);
+      echo json_encode([ "status-code" => "400", "response" => "No username found"]);
+      die();
+    }else{
+      return $params;
+    }
+  };
+
   $routing_management = function () use ($_SERVER) {
 
     $query_string = explode("/", $_SERVER['QUERY_STRING']);
     $_['verb'] = @$query_string[1];
     $_['noun'] = @$query_string[2];
 
-    //@TODO: decorator patter for handling lack of parameters
-    if (!$_['noun']) {
-      http_response_code(400);
-      echo json_encode([ "status-code" => "400", "response" => "No username found"]);
-      die();
-    }
     return $_;
 
   };
@@ -206,5 +210,5 @@
    */
 
   $handle_errors_with_whoops();
-  $RC = new RouteContext( $routing_management() );
-  $do_req($get_url(), $set_mode_req());
+  $RC = new RouteContext( $guard_params ( $routing_management() ) );
+  $do_req( $get_url(), $set_mode_req() );
