@@ -25,41 +25,17 @@
   $goutte  = new Goutte\Client();
   $whoops  = new \Whoops\Run;
 
-  /*
-   * @TODO: sustituir $handle_routing con functor;
-   *
-    class RouteContext {
-      public $context = [];
-    }
-    $routing_management = function($vars) use ($_SERVER){
-        function() {
-          $query_string = explode("/", $_SERVER['QUERY_STRING']);
-          $_['verb'] = @$query_string[1];
-          $_['noun'] = @$query_string[2];
 
-          if (!$_['noun']) {
-              http_response_code(400);
-              echo json_encode([ "status-code" => "400", "response" => "No username found"]);
-              die();
-          }
-          return $_;
-        }
-    }
-    $RC = new RouteContext;
-    $routing_management->bindTo($RC);
+  // handle routing context as functor;
 
-    $routing_management();
-    d($RC);
-   *
-   *
-   *
-   */
-
-
-  // for routing
-  $query_string = null;
-  $verb = null;
-  $noun = null;
+  class RouteContext
+  {
+    public $context = [];
+    public function __construct($v)
+      {
+          $this->context = $v;
+      }
+  }
 
 
   /**
@@ -71,38 +47,43 @@
    *
    */
 
-  $routing_management = function () use( &$query_string, &$verb, &$noun ) {
+  $routing_management = function () use ($_SERVER) {
 
     $query_string = explode("/", $_SERVER['QUERY_STRING']);
-    $verb = @$query_string[1];
-    $noun = @$query_string[2];
+    $_['verb'] = @$query_string[1];
+    $_['noun'] = @$query_string[2];
 
-    if (!$noun) {
-        http_response_code(400);
-        echo json_encode([ "status-code" => "400", "response" => "No username found"]);
-        die();
+    //@TODO: decorator patter for handling lack of parameters
+    if (!$_['noun']) {
+      http_response_code(400);
+      echo json_encode([ "status-code" => "400", "response" => "No username found"]);
+      die();
     }
+    return $_;
+
   };
 
-  $spit = function($value) {
+  $spit = function ($value) {
     header('Content-Type', 'application/json');
     header("Access-Control-Allow-Origin: *"); //CORS
     echo $value;
   };
 
 
-  $req_with_goutte = function($url) use ($goutte){
+  $req_with_goutte = function ($url) use ($goutte) {
 
     $crawler = $goutte->request('GET', $url);
     $status_code = $goutte->getResponse()->getStatus();
 
     if ($status_code==200) {
-      $res = [];
-      foreach ($crawler->filter('a[class="title"]')->extract(array('_text', 'href')) as $elem) {
-        $res[]= [ trim($elem[0]) => trim($elem[1]) ];
-      }
+        $res = [];
+        foreach ($crawler->filter('a[class="title"]')->extract(array('_text', 'href')) as $elem) {
+            $res[]= [ trim($elem[0]) => trim($elem[1]) ];
+        }
     }
-    if (empty($res)) $res = json_encode( ['status-code' => 404, "response" => "No user found"] );
+    if (empty($res)) {
+        $res = json_encode(['status-code' => 404, "response" => "No user found"]);
+    }
     return $res;
   };
 
@@ -117,14 +98,12 @@
     if ($mode == 1) {
 
         //@TODO: $spit
-        echo json_encode( $req_with_goutte($url) );
-
+        echo json_encode($req_with_goutte($url));
     } else {
-
         try {
             $req = @$guzzle->request('GET', $url);
             if ($req->getBody()) {
-                $spit( $req->getBody() );
+                $spit($req->getBody());
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             echo json_encode(["status-code" => $e->getResponse()->getStatusCode(), "response" => "No user found"]);
@@ -134,14 +113,15 @@
   };
 
 
-  $set_mode_req = function() use ( &$verb ) {
-    return ($verb != "android-market")? 0: 1;
+  $set_mode_req = function () use (&$RC) {
+    return ($RC->context['verb'] != "android-market")? 0: 1;
   };
 
 
-  $get_url = function () use (&$verb, &$noun, $GH_SECRET_KEY, $GH_ID_KEY ) {
+  $get_url = function () use ( $GH_SECRET_KEY, $GH_ID_KEY, $spit, &$RC ) {
+    $url = false;
 
-    switch ($verb) {
+    switch ($RC->context['verb']) {
 
      /**
       * http://mysite.com/followers_gh/trufae
@@ -150,7 +130,7 @@
       *
       */
      case "followers_gh":
-      $url = 'https://api.github.com/users/' . $noun . '/followers?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
+      $url = 'https://api.github.com/users/' . $RC->context['noun'] . '/followers?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
       break;
      /**
       * http://mysite.com/search_gh/rickycode
@@ -159,7 +139,7 @@
       *
       */
      case "search_gh":
-      $url = 'https://api.github.com/search/users?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY.'&q='  . $noun;
+      $url = 'https://api.github.com/search/users?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY.'&q='  . $RC->context['noun'] ;
       break;
 
      /**
@@ -169,7 +149,7 @@
       *
       */
     case "user":
-      $url = 'https://api.github.com/users/'.$noun.'?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
+      $url = 'https://api.github.com/users/'. $RC->context['noun']  .'?client_id='.$GH_ID_KEY.'&client_secret='.$GH_SECRET_KEY;
       break;
 
      /**
@@ -179,15 +159,27 @@
       *
       */
     case "android-market":
-      $url = "https://play.google.com/store/search?q=pub:". $noun;
+      $url = "https://play.google.com/store/search?q=pub:". $RC->context['noun'] ;
+      break;
+
+    default:
       break;
 
     }
 
+
+    // no url found!
+    if (!$url) {
+        $spit(json_encode(['status-code' => 404, "response" => "No url found"])); //FIXME:
+      return false;
+    }
+
+
+
     return $url;
   };
 
-  $handle_errors_with_whoops = function() use ($whoops){
+  $handle_errors_with_whoops = function () use ($whoops) {
 
     $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
     $whoops->register();
@@ -214,5 +206,5 @@
    */
 
   $handle_errors_with_whoops();
-  $routing_management();
-  $do_req( $get_url(), $set_mode_req() );
+  $RC = new RouteContext( $routing_management() );
+  $do_req($get_url(), $set_mode_req());
