@@ -106,8 +106,7 @@
 
     if ($mode == 1) {
 
-        //@TODO: $spit
-        echo json_encode($req_with_goutte($url));
+        $spit( json_encode( $req_with_goutte($url)));
     } else {
         try {
             $req = @$guzzle->request('GET', $url);
