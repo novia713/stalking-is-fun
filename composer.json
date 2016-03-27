@@ -4,6 +4,7 @@
         "raveren/kint": "^1.0",
         "guzzlehttp/guzzle": "^6.1",
         "league/climate": "^3.2",
+        "league/uri": "^4.1",
         "zircote/swagger-php": "^2.0",
         "filp/whoops": "^2.1"
     }

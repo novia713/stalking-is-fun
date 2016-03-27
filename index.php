@@ -1,5 +1,6 @@
 <?php
   require "vendor/autoload.php";
+  use League\Uri\UriParser;
   /**
    *
    *  The MIT License (MIT)
@@ -24,6 +25,7 @@
   $guzzle  = new GuzzleHttp\Client();
   $goutte  = new Goutte\Client();
   $whoops  = new \Whoops\Run;
+  $parser  = new UriParser();
 
 
   // handle routing context as functor;
@@ -57,19 +59,22 @@
     }
   };
 
-  $routing_management = function () use ($_SERVER) {
+  $routing_management = function () use ($_SERVER, $parser) {
+    $uri = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $uri_chunks = explode( "/", $parser->parse( $uri )["path"] );
 
-    $query_string = explode("/", $_SERVER['QUERY_STRING']);
-    $_['verb'] = @$query_string[1];
-    $_['noun'] = @$query_string[2];
+    $_['verb'] = @$uri_chunks[2];
+    $_['noun'] = @$uri_chunks[3];
 
     return $_;
 
   };
 
   $spit = function ($value) {
-    header('Content-Type', 'application/json');
+
     header("Access-Control-Allow-Origin: *"); //CORS
+    header('Content-Type', 'application/json;charset=utf-8');
+
     echo $value;
   };
 
@@ -123,6 +128,7 @@
 
 
   $get_url = function () use ( $GH_SECRET_KEY, $GH_ID_KEY, $spit, &$RC ) {
+
     $url = false;
 
     switch ($RC->context['verb']) {
