@@ -9,3 +9,5 @@
 To visualize the documentation point to http://mysite.com/doc/dist/
 
 [if you are having this project in internet, perhaps you don't want swagger were public accesible]
+
+4. [if using nginx] create a /logs directory and use /stalking-nginx.conf 

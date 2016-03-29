@@ -1,6 +1,6 @@
 <?php
   require "vendor/autoload.php";
-  use League\Uri\UriParser;
+
   /**
    *
    *  The MIT License (MIT)
@@ -25,7 +25,7 @@
   $guzzle  = new GuzzleHttp\Client();
   $goutte  = new Goutte\Client();
   $whoops  = new \Whoops\Run;
-  $parser  = new UriParser();
+  $parser  = new League\Uri\UriParser();
 
 
   // handle routing context as functor;
@@ -63,8 +63,14 @@
     $uri = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     $uri_chunks = explode( "/", $parser->parse( $uri )["path"] );
 
-    $_['verb'] = @$uri_chunks[2];
-    $_['noun'] = @$uri_chunks[3];
+    //nginx
+    if (strpos( $_SERVER["SERVER_SOFTWARE"], "nginx" ) !== false) {
+      $_['verb'] = @$uri_chunks[1];
+      $_['noun'] = @$uri_chunks[2];
+    }else{ //apache
+      $_['verb'] = @$uri_chunks[2];
+      $_['noun'] = @$uri_chunks[3];
+    }
 
     return $_;
 
@@ -108,8 +114,10 @@
 
         $spit( json_encode( $req_with_goutte($url)));
     } else {
+
         try {
             $req = @$guzzle->request('GET', $url);
+
             if ($req->getBody()) {
                 $spit($req->getBody());
             }
@@ -122,7 +130,7 @@
 
 
   $set_mode_req = function () use (&$RC) {
-    return ($RC->context['verb'] != "android-market")? 0: 1;
+    return ( $RC->context['verb'] != "android-market" )? 0: 1;
   };
 
 
