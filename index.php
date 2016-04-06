@@ -33,7 +33,7 @@
   class RouteContext
   {
     public $context = [];
-    public function __construct($v)
+      public function __construct($v)
       {
           $this->context = $v;
       }
@@ -50,26 +50,26 @@
    */
 
   $guard_params = function ($params) {
-    if (array_filter($params, function( $p ) { return empty($p); }) ){
-      http_response_code(400);
-      echo json_encode([ "status-code" => "400", "response" => "No username found"]);
-      die();
-    }else{
-      return $params;
+    if (array_filter($params, function ($p) { return empty($p); })) {
+        http_response_code(400);
+        echo json_encode([ "status-code" => "400", "response" => "No username found"]);
+        die();
+    } else {
+        return $params;
     }
   };
 
   $routing_management = function () use ($_SERVER, $parser) {
     $uri = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    $uri_chunks = explode( "/", $parser->parse( $uri )["path"] );
+    $uri_chunks = explode("/", $parser->parse($uri)["path"]);
 
     //nginx
-    if (strpos( $_SERVER["SERVER_SOFTWARE"], "nginx" ) !== false) {
-      $_['verb'] = @$uri_chunks[1];
-      $_['noun'] = @$uri_chunks[2];
-    }else{ //apache
+    if (strpos($_SERVER["SERVER_SOFTWARE"], "nginx") !== false) {
+        $_['verb'] = @$uri_chunks[1];
+        $_['noun'] = @$uri_chunks[2];
+    } else { //apache
       $_['verb'] = @$uri_chunks[2];
-      $_['noun'] = @$uri_chunks[3];
+        $_['noun'] = @$uri_chunks[3];
     }
 
     return $_;
@@ -111,10 +111,8 @@
   $do_req = function ($url, $mode=0) use ($spit, $guzzle, $req_with_goutte) {
 
     if ($mode == 1) {
-
-        $spit( json_encode( $req_with_goutte($url)));
+        $spit(json_encode($req_with_goutte($url)));
     } else {
-
         try {
             $req = @$guzzle->request('GET', $url);
 
@@ -130,11 +128,11 @@
 
 
   $set_mode_req = function () use (&$RC) {
-    return ( $RC->context['verb'] != "android-market" )? 0: 1;
+    return ($RC->context['verb'] != "android-market")? 0: 1;
   };
 
 
-  $get_url = function () use ( $GH_SECRET_KEY, $GH_ID_KEY, $spit, &$RC ) {
+  $get_url = function () use ($GH_SECRET_KEY, $GH_ID_KEY, $spit, &$RC) {
 
     $url = false;
 
@@ -223,5 +221,5 @@
    */
 
   $handle_errors_with_whoops();
-  $RC = new RouteContext( $guard_params ( $routing_management() ) );
-  $do_req( $get_url(), $set_mode_req() );
+  $RC = new RouteContext($guard_params ($routing_management()));
+  $do_req($get_url(), $set_mode_req());
